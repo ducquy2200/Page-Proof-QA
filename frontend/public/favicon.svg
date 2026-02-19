@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c8a84b"/>
+      <stop offset="100%" stop-color="#8e793e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Document -->
+  <rect x="5" y="2" width="17" height="22" rx="2" fill="#1e1a16" stroke="url(#gold)" stroke-width="1"/>
+
+  <!-- Folded corner -->
+  <path d="M17 2 L22 7 L17 7 Z" fill="#2e2a24" stroke="url(#gold)" stroke-width="0.75" stroke-linejoin="round"/>
+
+  <!-- Text lines -->
+  <rect x="8" y="11" width="8" height="1" rx="0.5" fill="#8e793e"/>
+  <rect x="8" y="14" width="11" height="1" rx="0.5" fill="#8e793e"/>
+
+  <!-- Gold highlight bar -->
+  <rect x="8" y="17.5" width="9" height="2" rx="1" fill="url(#gold)" opacity="0.85"/>
+
+  <!-- Minimal search circle -->
+  <circle cx="23" cy="25" r="4.5" fill="#1e1a16" stroke="url(#gold)" stroke-width="1.25"/>
+  <line x1="26.2" y1="28.2" x2="28.5" y2="30.5" stroke="url(#gold)" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
