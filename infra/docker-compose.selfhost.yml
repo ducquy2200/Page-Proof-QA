@@ -1,0 +1,106 @@
+name: pageproofqa-selfhost
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    ports:
+      - "${EXPOSE_DB_PORT:-5432}:5432"
+
+  api:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: prod
+      DEBUG: "false"
+      API_HOST: 0.0.0.0
+      API_PORT: "8080"
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      CORS_ORIGINS: ${CORS_ORIGINS_JSON}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL:-gpt-5.2}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-large}
+      OPENAI_EMBEDDING_DIMENSIONS: ${OPENAI_EMBEDDING_DIMENSIONS:-1536}
+      OCR_FALLBACK_ENABLED: ${OCR_FALLBACK_ENABLED:-true}
+      OCR_TRIGGER_MIN_WORDS: ${OCR_TRIGGER_MIN_WORDS:-18}
+      OCR_TRIGGER_MIN_ALNUM_RATIO: ${OCR_TRIGGER_MIN_ALNUM_RATIO:-0.60}
+      OCR_LANGUAGE: ${OCR_LANGUAGE:-eng}
+      OCR_DPI: ${OCR_DPI:-300}
+      OCR_FULL_PAGE: ${OCR_FULL_PAGE:-true}
+      OCR_TESSDATA: ${OCR_TESSDATA:-/usr/share/tesseract-ocr/5/tessdata}
+      RETRIEVAL_TOP_K: ${RETRIEVAL_TOP_K:-8}
+      RETRIEVAL_MAX_CONTEXT_CHUNKS: ${RETRIEVAL_MAX_CONTEXT_CHUNKS:-6}
+      ANSWER_MAX_EVIDENCE_ITEMS: ${ANSWER_MAX_EVIDENCE_ITEMS:-0}
+      RETRIEVAL_MIN_KEYWORD_OVERLAP: ${RETRIEVAL_MIN_KEYWORD_OVERLAP:-1}
+      EVIDENCE_QUESTION_WEIGHT: ${EVIDENCE_QUESTION_WEIGHT:-0.2}
+      EVIDENCE_ANSWER_WEIGHT: ${EVIDENCE_ANSWER_WEIGHT:-0.8}
+      EVIDENCE_RELATIVE_SCORE_THRESHOLD: ${EVIDENCE_RELATIVE_SCORE_THRESHOLD:-0.60}
+      EVIDENCE_DROP_RATIO_STOP: ${EVIDENCE_DROP_RATIO_STOP:-0.72}
+      EVIDENCE_MIN_ABSOLUTE_SCORE: ${EVIDENCE_MIN_ABSOLUTE_SCORE:-0.20}
+      RETRIEVAL_MAX_VECTOR_DISTANCE: ${RETRIEVAL_MAX_VECTOR_DISTANCE:-1.2}
+      MINIMUM_EVIDENCE_ITEMS: ${MINIMUM_EVIDENCE_ITEMS:-1}
+      REQUIRE_LLM_CITATIONS: ${REQUIRE_LLM_CITATIONS:-true}
+    command: sh -c "python -m alembic upgrade head && python run.py"
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - "${EXPOSE_API_PORT:-8080}:8080"
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/frontend.Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "${EXPOSE_WEB_PORT:-5173}:80"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_started
+      api:
+        condition: service_started
+    volumes:
+      - ${CF_CLOUDFLARED_CERT_FILE:-./cloudflared/cert.pem}:/etc/cloudflared/cert.pem:ro
+      - ${CF_TUNNEL_CREDENTIALS_PATH:-./cloudflared/tunnel-credentials.json}:/etc/cloudflared/tunnel-credentials.json:ro
+    entrypoint:
+      - cloudflared
+      - --no-autoupdate
+    command:
+      - tunnel
+      - --origincert
+      - /etc/cloudflared/cert.pem
+      - run
+      - --credentials-file
+      - /etc/cloudflared/tunnel-credentials.json
+      - ${CF_TUNNEL_ID}
+
+volumes:
+  postgres_data:
+  uploads_data:
