@@ -1,0 +1,11 @@
+fastapi==0.129.0
+pgvector==0.4.2
+pydantic==2.12.5
+pydantic_settings==2.13.1
+SQLAlchemy==2.0.39
+uvicorn==0.41.0
+alembic==1.18.4
+psycopg[binary]==3.3.3
+python-multipart==0.0.22
+PyMuPDF==1.27.1
+openai==2.21.0
