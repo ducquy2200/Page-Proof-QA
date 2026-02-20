@@ -15,7 +15,15 @@ export default function PDFHighlighter({
   if (!renderedWidth || !renderedHeight) return null
 
   return (
-    <div className="absolute inset-0">
+    <div
+      className="absolute"
+      style={{
+        left: 0,
+        top: 0,
+        width: `${renderedWidth}px`,
+        height: `${renderedHeight}px`,
+      }}
+    >
       {highlights.map((h) => {
         const sourceWidth = h.pageWidth ?? originalWidth
         const sourceHeight = h.pageHeight ?? originalHeight

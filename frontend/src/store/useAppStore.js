@@ -1,6 +1,16 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+const MIN_PDF_ZOOM = 0.5
+const MAX_PDF_ZOOM = 3
+const PDF_ZOOM_STEP = 0.25
+
+function clampPdfZoom(value) {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return 1
+  return Math.max(MIN_PDF_ZOOM, Math.min(MAX_PDF_ZOOM, numeric))
+}
+
 export const useAppStore = create(
   persist(
     (set) => ({
@@ -14,6 +24,7 @@ export const useAppStore = create(
 
   // Navigation
   currentPage: 1,
+  pdfZoom: 1,
 
   // Highlights
   highlights: [],
@@ -45,6 +56,10 @@ export const useAppStore = create(
   resetUploadProgress: () => set({ uploadProgress: 0 }),
 
   setCurrentPage: (page) => set({ currentPage: page }),
+  setPdfZoom: (value) => set({ pdfZoom: clampPdfZoom(value) }),
+  zoomIn: () => set((state) => ({ pdfZoom: clampPdfZoom(state.pdfZoom + PDF_ZOOM_STEP) })),
+  zoomOut: () => set((state) => ({ pdfZoom: clampPdfZoom(state.pdfZoom - PDF_ZOOM_STEP) })),
+  resetPdfZoom: () => set({ pdfZoom: 1 }),
 
   setHighlights: (highlights) => set({ highlights, hoveredHighlightId: null }),
 
@@ -75,6 +90,7 @@ export const useAppStore = create(
       pageHeight: null,
       uploadProgress: 0,
       currentPage: 1,
+      pdfZoom: 1,
       highlights: [],
       activeHighlightPage: null,
       hoveredHighlightId: null,

@@ -17,6 +17,9 @@ Page-Proof-QA is designed to keep answers auditable by grounding every response 
 - LLM answering with citation-aware grounding
 - Evidence-to-bounding-box mapping for deterministic visual highlights
 - Frontend hover-sync between chat evidence cards and PDF overlays
+- True upload progress feedback in the frontend upload flow
+- Responsive frontend layout (mobile pane switch + desktop resizable divider with persisted split ratio)
+- PDF zoom controls (50%-300%) with highlight alignment preserved
 - Local self-hosting with Docker and optional Cloudflare Tunnel
 
 ## End-to-End Flow
@@ -44,7 +47,7 @@ Page-Proof-QA/
 - Backend API contract: `backend/docs/api-contract.md`
 
 ## Tech Stack
-- Frontend: React 19, Vite, Zustand, Tailwind CSS v4, Axios
+- Frontend: React 19, Vite, TanStack Query, Zustand, Tailwind CSS v4, Axios
 - Backend: FastAPI, SQLAlchemy, Alembic, PostgreSQL, pgvector, PyMuPDF, OpenAI API
 - Infra: Docker Compose, Nginx, Cloudflare Tunnel (optional)
 

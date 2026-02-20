@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
 import AnswerPanel from './AnswerPanel'
 
-export default function QuestionHistory({ entries }) {
+export default function QuestionHistory({ entries, onEvidenceJump }) {
   const [open, setOpen] = useState(false)
   const [hovered, setHovered] = useState(false)
   const { c } = useTheme()
@@ -28,7 +28,9 @@ export default function QuestionHistory({ entries }) {
 
       {open && (
         <div className="space-y-3 opacity-50">
-          {entries.map((entry) => <AnswerPanel key={entry.id} entry={entry} />)}
+          {entries.map((entry) => (
+            <AnswerPanel key={entry.id} entry={entry} onEvidenceJump={onEvidenceJump} />
+          ))}
         </div>
       )}
     </div>

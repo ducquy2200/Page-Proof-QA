@@ -4,11 +4,13 @@ Frontend application for document question answering with grounded evidence high
 
 The UI lets a user:
 - Upload a PDF
-- Wait for backend processing
+- See true upload progress, then backend processing state
 - Ask a question about the document
 - See the answer plus evidence snippets
 - Jump to evidence on the rendered page
 - Hover-sync highlights between chat evidence and PDF overlays
+- Zoom PDF pages while keeping highlight alignment
+- Resize the desktop PDF/chat divider and switch panes on mobile
 
 ## What This Frontend Owns
 - User flow and interaction design
@@ -16,11 +18,14 @@ The UI lets a user:
 - Question input and Q/A history display
 - Evidence rendering and highlight overlay behavior
 - Coordinate scaling from PDF-space to rendered image-space
+- Responsive layout behavior (mobile pane switch + desktop resizable split)
+- Client-side PDF zoom controls
 
 The backend owns extraction, retrieval, answer generation, and bounding boxes.
 
 ## Tech Stack
 - React 19 + Vite
+- TanStack Query
 - Zustand for app state
 - Axios for API calls
 - Tailwind CSS (v4) for styling
@@ -28,8 +33,8 @@ The backend owns extraction, retrieval, answer generation, and bounding boxes.
 
 ## High-Level Flow
 1. User uploads a PDF.
-2. Frontend calls `POST /documents`.
-3. Frontend polls `GET /documents/{id}/status` until `ready`.
+2. Frontend calls `POST /documents` and tracks byte upload progress.
+3. Frontend switches to the document workspace only after upload succeeds, then polls `GET /documents/{id}/status` until `ready`.
 4. User asks a question.
 5. Frontend calls `POST /documents/{id}/ask`.
 6. Frontend maps evidence into highlight objects (with colors).
@@ -108,7 +113,7 @@ frontend/
     theme.config.js              # Centralized light/dark palette + highlight colors
 
     layouts/
-      MainLayout.jsx             # 2-pane layout (PDF left, Q/A right)
+      MainLayout.jsx             # Responsive shell: mobile pane switch + desktop resizable split
 
     services/
       api.js                     # Axios client + backend API functions
@@ -133,8 +138,8 @@ frontend/
         ProcessingStatus.jsx     # Upload/processing progress state UI
       pdf/
         PDFViewer.jsx            # PDF container with controls + page display
-        PDFControls.jsx          # Prev/next page + reset/new-doc action
-        PDFPage.jsx              # Page image load + overlay mount
+        PDFControls.jsx          # Prev/next page + zoom controls + reset/new-doc action
+        PDFPage.jsx              # Page image load + zoom scaling + overlay mount
         PDFHighlighter.jsx       # Absolute positioned bbox overlays
       qa/
         QuestionInput.jsx        # Question textarea + submit action
@@ -153,8 +158,8 @@ frontend/
 
 ## State Model (Zustand)
 Main store fields in `src/store/useAppStore.js`:
-- Document: `documentId`, `documentStatus`, `totalPages`, `pageWidth`, `pageHeight`
-- Navigation: `currentPage`
+- Document: `documentId`, `documentStatus`, `totalPages`, `pageWidth`, `pageHeight`, `uploadProgress`
+- Navigation: `currentPage`, `pdfZoom`
 - Evidence/interaction: `highlights`, `activeHighlightPage`, `hoveredHighlightId`
 - Q/A history: `qaHistory`
 - UI: `toast`, `theme`
@@ -162,6 +167,7 @@ Main store fields in `src/store/useAppStore.js`:
 Persistence policy:
 - Only `theme` is persisted.
 - Document and Q/A session state reset on new document.
+- Desktop split ratio is stored in localStorage (`pageproof-layout-split-ratio`).
 
 ## Highlight System
 - Backend sends bbox in PDF point coordinates.
@@ -173,10 +179,16 @@ Persistence policy:
 
 ## Error Handling and UX Behavior
 - Upload validation: PDF only
+- Real upload progress from Axios `onUploadProgress`
 - Poll timeout with user feedback
 - Backend connection errors displayed via toast
+- Upload failure returns user to upload screen (no accidental layout advance)
 - Ask-button disabled unless document is ready
 - On successful answer, app auto-jumps to first evidence page
+- Desktop divider can be dragged to resize PDF/chat panes (ratio persisted locally)
+- Mobile uses explicit `Document` / `Q&A` pane switching
+- Q&A pane has its own scroll container for long conversations/evidence lists
+- Zoom controls support 50%-300% with Ctrl+wheel shortcut
 
 ## Key Frontend Decisions
 1. Server-rendered page images instead of in-browser PDF parsing.

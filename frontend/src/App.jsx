@@ -13,17 +13,17 @@ export default function App() {
   return (
     <div
       data-theme={mode}
-      className="h-screen w-screen overflow-hidden flex flex-col"
+      className="h-dvh w-full overflow-hidden flex flex-col"
       style={{ backgroundColor: c.bgBase, color: c.textPrimary }}
     >
       <header
-        className="h-12 flex items-center justify-between px-6 shrink-0"
+        className="h-12 flex items-center justify-between px-3 sm:px-6 shrink-0"
         style={{ borderBottom: `1px solid ${c.borderSubtle}`, backgroundColor: c.bgSurface }}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
           <img src="/favicon.svg" alt="logo" className="w-6 h-6" />
           <span
-            className="font-semibold text-xs uppercase"
+            className="font-semibold text-xs uppercase truncate"
             style={{ color: c.accent, letterSpacing: '0.2em' }}
           >
             PageProof QA
@@ -33,9 +33,9 @@ export default function App() {
       </header>
 
       <div className="flex-1 overflow-hidden">
-        {documentStatus === 'idle'       && <UploadZone />}
+        {documentStatus === 'idle' && <UploadZone />}
         {(documentStatus === 'uploading' || documentStatus === 'processing') && <ProcessingStatus />}
-        {(documentStatus === 'ready'     || documentStatus === 'error')      && <MainLayout />}
+        {(documentStatus === 'ready' || documentStatus === 'error') && <MainLayout />}
       </div>
 
       <Toast />
