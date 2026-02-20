@@ -10,6 +10,7 @@ export const useAppStore = create(
   totalPages: null,
   pageWidth: null,
   pageHeight: null,
+  uploadProgress: 0,
 
   // Navigation
   currentPage: 1,
@@ -17,6 +18,7 @@ export const useAppStore = create(
   // Highlights
   highlights: [],
   activeHighlightPage: null,
+  hoveredHighlightId: null,
 
   // Q&A history
   qaHistory: [],
@@ -36,12 +38,21 @@ export const useAppStore = create(
     set({ documentId: id, totalPages, pageWidth, pageHeight }),
 
   setDocumentStatus: (status) => set({ documentStatus: status }),
+  setUploadProgress: (value) =>
+    set({
+      uploadProgress: Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0)),
+    }),
+  resetUploadProgress: () => set({ uploadProgress: 0 }),
 
   setCurrentPage: (page) => set({ currentPage: page }),
 
-  setHighlights: (highlights) => set({ highlights }),
+  setHighlights: (highlights) => set({ highlights, hoveredHighlightId: null }),
 
-  clearHighlights: () => set({ highlights: [], activeHighlightPage: null }),
+  clearHighlights: () => set({ highlights: [], activeHighlightPage: null, hoveredHighlightId: null }),
+
+  setHoveredHighlightId: (id) => set({ hoveredHighlightId: id }),
+
+  clearHoveredHighlightId: () => set({ hoveredHighlightId: null }),
 
   jumpToPage: (page) => set({ currentPage: page, activeHighlightPage: page }),
 
@@ -62,9 +73,11 @@ export const useAppStore = create(
       totalPages: null,
       pageWidth: null,
       pageHeight: null,
+      uploadProgress: 0,
       currentPage: 1,
       highlights: [],
       activeHighlightPage: null,
+      hoveredHighlightId: null,
       qaHistory: [],
       toast: null,
       theme: state.theme,   // preserve theme across resets

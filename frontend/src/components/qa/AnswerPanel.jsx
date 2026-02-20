@@ -31,6 +31,7 @@ export default function AnswerPanel({ entry }) {
               key={i}
               evidence={ev}
               color={entry.highlights?.[i]}
+              highlightId={entry.highlights?.[i]?.id ?? null}
               onClick={() => { setHighlights(entry.highlights); jumpToPage(ev.page) }}
             />
           ))}

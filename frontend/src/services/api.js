@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 const client = axios.create({
   baseURL: BASE_URL,
@@ -12,11 +12,17 @@ const client = axios.create({
 /**
  * Upload a PDF file. Returns { document_id }
  */
-export async function uploadDocument(file) {
+export async function uploadDocument(file, onProgress) {
   const form = new FormData()
   form.append('file', file)
   const { data } = await client.post('/documents', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: (event) => {
+      if (typeof onProgress !== 'function') return
+      if (!event?.total || event.total <= 0) return
+      const percent = Math.round((event.loaded / event.total) * 100)
+      onProgress(Math.max(0, Math.min(100, percent)))
+    },
   })
   return data
 }

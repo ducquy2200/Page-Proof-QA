@@ -3,13 +3,17 @@ import { useTheme } from '../../hooks/useTheme'
 import Spinner from '../ui/Spinner'
 
 const MESSAGES = {
-  uploading:  'Uploading document…',
-  processing: 'Processing — extracting text and building index…',
+  uploading: 'Uploading document...',
+  processing: 'Processing - extracting text and building index...',
 }
 
 export default function ProcessingStatus() {
   const status = useAppStore((s) => s.documentStatus)
+  const uploadProgress = useAppStore((s) => s.uploadProgress)
   const { t } = useTheme()
+
+  const isUploading = status === 'uploading'
+  const clampedProgress = Math.max(0, Math.min(100, Number(uploadProgress) || 0))
 
   return (
     <div
@@ -17,6 +21,7 @@ export default function ProcessingStatus() {
       style={{ backgroundColor: t('#181412', '#f7f2e8') }}
     >
       <Spinner size="lg" />
+
       <div>
         <p
           className="font-medium tracking-widest text-sm uppercase"
@@ -28,17 +33,27 @@ export default function ProcessingStatus() {
           className="text-xs mt-2 tracking-wide"
           style={{ color: t('#5a4e3a', '#a09070') }}
         >
-          This may take a moment for large documents.
+          {isUploading
+            ? `${clampedProgress}% uploaded`
+            : 'Upload complete. Processing may take a moment for large documents.'}
         </p>
       </div>
+
       <div
-        className="w-48 h-px overflow-hidden"
+        className="w-64 h-2 rounded-full overflow-hidden"
         style={{ backgroundColor: t('#2e2a24', '#ddd4b0') }}
       >
-        <div
-          className="h-full animate-pulse w-2/3"
-          style={{ backgroundColor: '#ad974f' }}
-        />
+        {isUploading ? (
+          <div
+            className="h-full transition-[width] duration-200 ease-out"
+            style={{ width: `${clampedProgress}%`, backgroundColor: '#ad974f' }}
+          />
+        ) : (
+          <div
+            className="h-full w-full animate-pulse"
+            style={{ backgroundColor: '#ad974f' }}
+          />
+        )}
       </div>
     </div>
   )

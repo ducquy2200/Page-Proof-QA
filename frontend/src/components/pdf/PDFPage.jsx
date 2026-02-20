@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { usePageImage } from '../../hooks/usePageImage'
 import { useHighlightsForPage } from '../../hooks/useHighlights'
 import PDFHighlighter from './PDFHighlighter'
@@ -12,18 +12,44 @@ export default function PDFPage({ page }) {
   const pageHeight = useAppStore((s) => s.pageHeight)
 
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 })
-  const [loaded, setLoaded] = useState(false)
+  const [loadedSrc, setLoadedSrc] = useState(null)
   const imgRef = useRef(null)
+  const loaded = Boolean(src && loadedSrc === src)
+
+  const updateImgSize = () => {
+    if (!imgRef.current) return
+    const rect = imgRef.current.getBoundingClientRect()
+    setImgSize({
+      width: rect.width,
+      height: rect.height,
+    })
+  }
 
   const handleLoad = () => {
-    if (imgRef.current) {
-      setImgSize({
-        width: imgRef.current.offsetWidth,
-        height: imgRef.current.offsetHeight,
-      })
-    }
-    setLoaded(true)
+    updateImgSize()
+    setLoadedSrc(src)
   }
+
+  useEffect(() => {
+    if (!loaded || !imgRef.current) return undefined
+
+    updateImgSize()
+
+    const element = imgRef.current
+    const observer = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(updateImgSize)
+      : null
+
+    if (observer) {
+      observer.observe(element)
+    }
+    window.addEventListener('resize', updateImgSize)
+
+    return () => {
+      if (observer) observer.disconnect()
+      window.removeEventListener('resize', updateImgSize)
+    }
+  }, [loaded, src])
 
   return (
     <div

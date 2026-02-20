@@ -20,6 +20,8 @@ export function useQA() {
         page: ev.page,
         bbox: ev.bbox,
         text: ev.text,
+        pageWidth: ev.page_width ?? null,
+        pageHeight: ev.page_height ?? null,
         ...getHighlightColor(i),
       }))
 
