@@ -6,6 +6,9 @@ Users can upload a document, ask a question, and receive:
 - supporting evidence snippets
 - visual highlights on the exact PDF regions used as evidence
 
+## Live Demo
+- App: https://page-proof-qa.quyducdo.com
+
 ## What Problem It Solves
 Most document Q&A tools return answers without clear traceability.
 Page-Proof-QA is designed to keep answers auditable by grounding every response in extracted spans and page-level bounding boxes.
